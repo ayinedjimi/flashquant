@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" fill="none">
+  <defs>
+    <linearGradient id="ag1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/><stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="ag2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/><stop offset="100%" style="stop-color:#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="ag3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#14b8a6"/><stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="ag4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/><stop offset="100%" style="stop-color:#f97316"/>
+    </linearGradient>
+    <filter id="sh2">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="20" font-weight="700" fill="#1e293b">FlashQuant System Architecture</text>
+
+  <!-- ===== LAYER 1: Python API ===== -->
+  <g transform="translate(30, 50)" filter="url(#sh2)">
+    <rect width="940" height="110" rx="14" fill="white" stroke="#c7d2fe" stroke-width="1.5"/>
+    <rect width="940" height="6" rx="3" fill="url(#ag1)"/>
+    <text x="20" y="30" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700" fill="#4338ca">
+      Python API Layer</text>
+    <text x="940" y="30" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">
+      src/flashquant/</text>
+
+    <!-- Boxes -->
+    <g transform="translate(20, 42)">
+      <rect width="160" height="52" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#4338ca">FlashQuantConfig</text>
+      <text x="80" y="40" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#6366f1">bits, seeds, max_seq</text>
+    </g>
+    <g transform="translate(200, 42)">
+      <rect width="175" height="52" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+      <text x="87" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#4338ca">Key/Value Compressor</text>
+      <text x="87" y="40" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#6366f1">separate K/V codebooks</text>
+    </g>
+    <g transform="translate(395, 42)">
+      <rect width="185" height="52" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+      <text x="92" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#4338ca">CompressedDynCache</text>
+      <text x="92" y="40" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#6366f1">O(1) ring buffer append</text>
+    </g>
+    <g transform="translate(600, 42)">
+      <rect width="155" height="52" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+      <text x="77" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#4338ca">vLLM Backend</text>
+      <text x="77" y="40" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#6366f1">v0.18-0.22 plugin</text>
+    </g>
+    <g transform="translate(775, 42)">
+      <rect width="145" height="52" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+      <text x="72" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#4338ca">Profiling</text>
+      <text x="72" y="40" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#6366f1">record_function()</text>
+    </g>
+  </g>
+
+  <!-- Connector -->
+  <g>
+    <line x1="500" y1="160" x2="500" y2="180" stroke="#94a3b8" stroke-width="2"/>
+    <polygon points="495,178 500,188 505,178" fill="#94a3b8"/>
+    <text x="520" y="175" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#94a3b8">dispatch</text>
+  </g>
+
+  <!-- ===== LAYER 2: Dispatch ===== -->
+  <g transform="translate(30, 190)" filter="url(#sh2)">
+    <rect width="940" height="60" rx="14" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+    <rect width="940" height="6" rx="3" fill="url(#ag2)"/>
+    <text x="20" y="38" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">
+      Kernel Dispatch</text>
+
+    <g transform="translate(200, 15)">
+      <rect width="280" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text x="140" y="21" text-anchor="middle" font-family="mono, monospace" font-size="11" fill="#2563eb">
+        CUDA available? -> _C  |  else -> CPU ref</text>
+    </g>
+    <g transform="translate(510, 15)">
+      <rect width="200" height="32" rx="6" fill="#fef3c7" stroke="#fde68a" stroke-width="1"/>
+      <text x="100" y="21" text-anchor="middle" font-family="mono, monospace" font-size="11" fill="#b45309">
+        torch.profiler traced</text>
+    </g>
+  </g>
+
+  <!-- Connector -->
+  <g>
+    <line x1="300" y1="250" x2="300" y2="275" stroke="#94a3b8" stroke-width="2"/>
+    <polygon points="295,273 300,283 305,273" fill="#94a3b8"/>
+    <line x1="700" y1="250" x2="700" y2="275" stroke="#94a3b8" stroke-width="2"/>
+    <polygon points="695,273 700,283 705,273" fill="#94a3b8"/>
+  </g>
+
+  <!-- ===== LAYER 3: C++ Core ===== -->
+  <g transform="translate(30, 285)" filter="url(#sh2)">
+    <rect width="460" height="130" rx="14" fill="white" stroke="#99f6e4" stroke-width="1.5"/>
+    <rect width="460" height="6" rx="3" fill="url(#ag3)"/>
+    <text x="20" y="30" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700" fill="#0d9488">
+      C++ Core (pybind11)</text>
+    <text x="460" y="30" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">
+      csrc/core/</text>
+
+    <g transform="translate(15, 42)">
+      <rect width="100" height="72" rx="8" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1"/>
+      <text x="50" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#0d9488">Codebook</text>
+      <text x="50" y="38" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">Lloyd-Max</text>
+      <text x="50" y="50" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">erfinv()</text>
+      <text x="50" y="62" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">cached</text>
+    </g>
+    <g transform="translate(125, 42)">
+      <rect width="100" height="72" rx="8" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1"/>
+      <text x="50" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#0d9488">Rotation</text>
+      <text x="50" y="38" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">Haar QR</text>
+      <text x="50" y="50" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">seeded</text>
+      <text x="50" y="62" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">split E/O</text>
+    </g>
+    <g transform="translate(235, 42)">
+      <rect width="100" height="72" rx="8" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1"/>
+      <text x="50" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#0d9488">Quantizer</text>
+      <text x="50" y="38" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">MSE + Prod</text>
+      <text x="50" y="50" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">QJL signs</text>
+      <text x="50" y="62" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">int8 store</text>
+    </g>
+    <g transform="translate(345, 42)">
+      <rect width="100" height="72" rx="8" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1"/>
+      <text x="50" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#0d9488">Packing</text>
+      <text x="50" y="38" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">nibble 4-bit</text>
+      <text x="50" y="50" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">2-bit pack</text>
+      <text x="50" y="62" text-anchor="middle" font-family="mono, monospace" font-size="8" fill="#14b8a6">validated</text>
+    </g>
+  </g>
+
+  <!-- ===== LAYER 3b: CUDA Kernels ===== -->
+  <g transform="translate(510, 285)" filter="url(#sh2)">
+    <rect width="460" height="130" rx="14" fill="white" stroke="#fed7aa" stroke-width="1.5"/>
+    <rect width="460" height="6" rx="3" fill="url(#ag4)"/>
+    <text x="20" y="30" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700" fill="#c2410c">
+      CUDA Kernels</text>
+    <text x="460" y="30" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">
+      csrc/cuda/ (2,575 lines)</text>
+
+    <g transform="translate(12, 42)">
+      <rect width="90" height="72" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#c2410c">Compress</text>
+      <text x="45" y="35" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">fused 1-pass</text>
+      <text x="45" y="47" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">multi-row</text>
+      <text x="45" y="59" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">smem rotate</text>
+    </g>
+    <g transform="translate(108, 42)">
+      <rect width="90" height="72" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#c2410c">Decompress</text>
+      <text x="45" y="35" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">coalesced</text>
+      <text x="45" y="47" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">sequential</text>
+      <text x="45" y="59" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">template D</text>
+    </g>
+    <g transform="translate(204, 42)">
+      <rect width="90" height="72" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#c2410c">Fused FA2</text>
+      <text x="45" y="35" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">inline TQ4</text>
+      <text x="45" y="47" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">K/V decomp</text>
+      <text x="45" y="59" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#ea580c">FP32 accum</text>
+    </g>
+    <g transform="translate(300, 42)">
+      <rect width="74" height="72" rx="8" fill="#fef3c7" stroke="#fde68a" stroke-width="1"/>
+      <text x="37" y="20" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#b45309">Split-K</text>
+      <text x="37" y="35" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#d97706">4 splits</text>
+      <text x="37" y="47" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#d97706">paged</text>
+      <text x="37" y="59" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#d97706">TQ4 fused</text>
+    </g>
+    <g transform="translate(380, 42)">
+      <rect width="70" height="72" rx="8" fill="#fef3c7" stroke="#fde68a" stroke-width="1"/>
+      <text x="35" y="20" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#b45309">Reduce</text>
+      <text x="35" y="35" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#d97706">log-sum</text>
+      <text x="35" y="47" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#d97706">-exp</text>
+      <text x="35" y="59" text-anchor="middle" font-family="mono, monospace" font-size="7.5" fill="#d97706">softmax</text>
+    </g>
+  </g>
+
+  <!-- ===== LAYER 4: Hardware ===== -->
+  <g transform="translate(30, 440)">
+    <!-- GPU -->
+    <g filter="url(#sh2)">
+      <rect width="460" height="80" rx="14" fill="#1e1b4b" stroke="#312e81" stroke-width="1.5"/>
+      <text x="230" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+            font-size="14" font-weight="700" fill="#a5b4fc">NVIDIA GPU (SM 80+)</text>
+      <text x="230" y="50" text-anchor="middle" font-family="mono, monospace"
+            font-size="11" fill="#818cf8">Ampere | Ada Lovelace | Hopper</text>
+      <text x="230" y="68" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+            font-size="10" fill="#6366f1">Shared memory centroids | Warp reduce | Coalesced access</text>
+    </g>
+    <!-- CPU -->
+    <g transform="translate(480, 0)" filter="url(#sh2)">
+      <rect width="460" height="80" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+      <text x="230" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+            font-size="14" font-weight="700" fill="#475569">CPU Fallback (PyTorch)</text>
+      <text x="230" y="50" text-anchor="middle" font-family="mono, monospace"
+            font-size="11" fill="#64748b">Pure Python reference implementations</text>
+      <text x="230" y="68" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+            font-size="10" fill="#94a3b8">No compilation needed | Full functional parity | Test oracle</text>
+    </g>
+  </g>
+
+  <!-- Connectors to hardware -->
+  <g>
+    <line x1="260" y1="415" x2="260" y2="440" stroke="#6366f1" stroke-width="2"/>
+    <polygon points="255,438 260,448 265,438" fill="#6366f1"/>
+    <line x1="740" y1="415" x2="740" y2="440" stroke="#94a3b8" stroke-width="2"/>
+    <polygon points="735,438 740,448 745,438" fill="#94a3b8"/>
+  </g>
+
+  <!-- ===== LAYER 5: Test + CI ===== -->
+  <g transform="translate(30, 545)" filter="url(#sh2)">
+    <rect width="940" height="55" rx="14" fill="white" stroke="#bbf7d0" stroke-width="1.5"/>
+    <rect width="940" height="5" rx="2.5" fill="#22c55e"/>
+    <text x="20" y="35" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#15803d">
+      Test Suite: 264 tests passing</text>
+    <g transform="translate(260, 15)">
+      <rect width="90" height="28" rx="5" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="45" y="19" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#15803d">5 C++ GTest</text>
+    </g>
+    <g transform="translate(360, 15)">
+      <rect width="105" height="28" rx="5" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="52" y="19" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#15803d">21 pytest files</text>
+    </g>
+    <g transform="translate(475, 15)">
+      <rect width="130" height="28" rx="5" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="65" y="19" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#15803d">adversarial + bounds</text>
+    </g>
+    <g transform="translate(615, 15)">
+      <rect width="105" height="28" rx="5" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="52" y="19" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#15803d">32K long ctx</text>
+    </g>
+    <g transform="translate(730, 15)">
+      <rect width="100" height="28" rx="5" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="50" y="19" text-anchor="middle" font-family="mono, monospace" font-size="9" fill="#15803d">CI: lint + test</text>
+    </g>
+  </g>
+</svg>

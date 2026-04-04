@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check src/ tests/
+      - run: ruff format --check src/ tests/
+
+  test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install pytest pytest-cov
+          pip install -e ".[dev]" --no-build-isolation || pip install -e . || true
+          # If C++ build fails, tests still run with pure Python fallback
+      - name: Run tests (CPU, no GPU)
+        run: |
+          pytest tests/ -v --tb=short -m "not gpu and not slow" \
+            --cov=flashquant --cov-report=term-missing
+        env:
+          PYTHONPATH: src
+
+  test-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PyTorch + pybind11
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install pybind11
+      - name: Build C++ core (CPU only)
+        run: |
+          mkdir build && cd build
+          cmake .. \
+            -DFLASHQUANT_CUDA=OFF \
+            -DFLASHQUANT_TESTS=ON \
+            -Dpybind11_DIR=$(python -m pybind11 --cmakedir) \
+            -DCMAKE_PREFIX_PATH=$(python -c "import torch; print(torch.utils.cmake_prefix_path)")
+          make -j$(nproc)
+      - name: Run C++ tests
+        run: cd build && ctest --output-on-failure
+        if: success()

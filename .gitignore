@@ -1,0 +1,41 @@
+# Build
+build/
+dist/
+*.egg-info/
+*.so
+*.dylib
+*.dll
+_C*.pyd
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Env
+.env
+.venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+uv.lock

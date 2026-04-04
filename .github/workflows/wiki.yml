@@ -1,0 +1,29 @@
+name: Publish Wiki
+
+on:
+  push:
+    branches: [main]
+    paths: ['wiki-content/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push wiki content
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd wiki-content
+          git init -b master
+          git config user.name "Ayi NEDJIMI"
+          git config user.email "contact@ayinedjimi-consultants.fr"
+          git add -A
+          git commit -m "Update wiki from ${{ github.sha }}"
+          git remote add wiki "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git"
+          git push -f wiki master

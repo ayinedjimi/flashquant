@@ -1,0 +1,78 @@
+[project]
+name = "flashquant"
+version = "0.1.0"
+description = "High-performance TurboQuant KV cache compression — C++/CUDA core with Python bindings"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    {name = "Ayi Nedjimi", email = "contact@ayinedjimi-consultants.fr"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.4",
+]
+
+[project.optional-dependencies]
+vllm = ["vllm>=0.18,<0.22"]
+dev = [
+    "pytest>=9.0",
+    "pytest-cov>=7.0",
+    "pytest-benchmark>=5.0",
+    "ruff>=0.15",
+    "mypy>=1.10",
+]
+
+[project.urls]
+Homepage = "https://ayinedjimi-consultants.fr"
+Repository = "https://github.com/ayi-nedjimi/flashquant"
+Documentation = "https://github.com/ayi-nedjimi/flashquant#readme"
+
+[project.entry-points."vllm.general_plugins"]
+flashquant = "flashquant.vllm:register_flashquant_backend"
+
+[build-system]
+requires = [
+    "scikit-build-core>=0.10",
+    "pybind11>=2.13",
+    "cmake>=3.20",
+    "torch>=2.4",
+]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.args = ["-DFLASHQUANT_TESTS=OFF"]
+wheel.packages = ["src/flashquant"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "gpu: tests that require CUDA GPU",
+    "slow: tests that take > 10 seconds",
+]
+
+[tool.coverage.run]
+source = ["flashquant"]
+omit = []
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

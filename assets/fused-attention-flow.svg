@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" fill="none">
+  <defs>
+    <linearGradient id="fa-q" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/><stop offset="100%" style="stop-color:#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="fa-k" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ef4444"/><stop offset="100%" style="stop-color:#f87171"/>
+    </linearGradient>
+    <linearGradient id="fa-v" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#4ade80"/>
+    </linearGradient>
+    <linearGradient id="fa-attn" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/><stop offset="100%" style="stop-color:#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="fa-out" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/><stop offset="100%" style="stop-color:#fbbf24"/>
+    </linearGradient>
+    <filter id="fa-sh">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="18" font-weight="700" fill="#1e293b">
+    Fused TQ4 Attention — Data Flow (Single Tile)
+  </text>
+  <text x="450" y="48" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="12" fill="#64748b">
+    FlashAttention-2 with inline TQ4 decompression — zero extra memory allocation
+  </text>
+
+  <!-- === Input: Query (pre-rotated) === -->
+  <g transform="translate(30, 80)" filter="url(#fa-sh)">
+    <rect width="140" height="70" rx="10" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+    <rect width="140" height="5" rx="2.5" fill="url(#fa-q)"/>
+    <text x="70" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="13" font-weight="700" fill="#1d4ed8">Query (Q)</text>
+    <text x="70" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#3b82f6">pre-rotated by R^T</text>
+    <text x="70" y="62" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#94a3b8">[B, H_Q, 1, D] FP16</text>
+  </g>
+
+  <!-- === Input: Key packed === -->
+  <g transform="translate(30, 190)" filter="url(#fa-sh)">
+    <rect width="140" height="85" rx="10" fill="white" stroke="#fecaca" stroke-width="1.5"/>
+    <rect width="140" height="5" rx="2.5" fill="url(#fa-k)"/>
+    <text x="70" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="13" font-weight="700" fill="#dc2626">K Compressed</text>
+    <text x="70" y="46" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#ef4444">uint8 nibble-packed</text>
+    <text x="70" y="60" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#ef4444">[B, H_KV, S, D/2]</text>
+    <text x="70" y="74" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#94a3b8">+ fp32 norms</text>
+  </g>
+
+  <!-- === Input: Value packed === -->
+  <g transform="translate(30, 320)" filter="url(#fa-sh)">
+    <rect width="140" height="85" rx="10" fill="white" stroke="#bbf7d0" stroke-width="1.5"/>
+    <rect width="140" height="5" rx="2.5" fill="url(#fa-v)"/>
+    <text x="70" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="13" font-weight="700" fill="#16a34a">V Compressed</text>
+    <text x="70" y="46" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#22c55e">uint8 nibble-packed</text>
+    <text x="70" y="60" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#22c55e">[B, H_KV, S, D/2]</text>
+    <text x="70" y="74" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#94a3b8">+ fp32 norms</text>
+  </g>
+
+  <!-- === STEP 1: Unpack K === -->
+  <g transform="translate(230, 190)" filter="url(#fa-sh)">
+    <rect width="130" height="55" rx="10" fill="#fff1f2" stroke="#fecaca" stroke-width="1"/>
+    <text x="65" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="600" fill="#dc2626">Unpack K tile</text>
+    <text x="65" y="38" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#ef4444">high>>4, low&amp;0xF</text>
+    <text x="65" y="50" text-anchor="middle" font-family="mono, monospace"
+          font-size="8" fill="#94a3b8">smem centroids[16]</text>
+  </g>
+
+  <!-- Arrow K in -> Unpack -->
+  <line x1="170" y1="232" x2="230" y2="217" stroke="#fca5a5" stroke-width="1.5"/>
+  <polygon points="228,213 234,217 228,221" fill="#fca5a5"/>
+
+  <!-- === STEP 2: Q @ K^T === -->
+  <g transform="translate(410, 120)" filter="url(#fa-sh)">
+    <rect width="150" height="70" rx="10" fill="white" stroke="#ddd6fe" stroke-width="1.5"/>
+    <rect width="150" height="5" rx="2.5" fill="url(#fa-attn)"/>
+    <text x="75" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#7c3aed">Q @ K^T</text>
+    <text x="75" y="44" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#8b5cf6">* sm_scale * norm_k</text>
+    <text x="75" y="58" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#94a3b8">online softmax update</text>
+  </g>
+
+  <!-- Arrow Q -> QK -->
+  <line x1="170" y1="115" x2="410" y2="140" stroke="#93c5fd" stroke-width="1.5"/>
+  <polygon points="408,136 414,140 408,144" fill="#93c5fd"/>
+
+  <!-- Arrow Unpack K -> QK -->
+  <line x1="360" y1="210" x2="410" y2="170" stroke="#fca5a5" stroke-width="1.5"/>
+  <polygon points="408,166 414,170 408,174" fill="#fca5a5"/>
+
+  <!-- === STEP 3: Softmax === -->
+  <g transform="translate(610, 120)" filter="url(#fa-sh)">
+    <rect width="130" height="70" rx="10" fill="white" stroke="#ddd6fe" stroke-width="1.5"/>
+    <rect width="130" height="5" rx="2.5" fill="url(#fa-attn)"/>
+    <text x="65" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#7c3aed">Online Softmax</text>
+    <text x="65" y="44" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#8b5cf6">m_new = max(m, s)</text>
+    <text x="65" y="58" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#8b5cf6">l *= exp2(m-m_new)</text>
+  </g>
+
+  <!-- Arrow QK -> Softmax -->
+  <line x1="560" y1="155" x2="610" y2="155" stroke="#c4b5fd" stroke-width="1.5"/>
+  <polygon points="608,151 614,155 608,159" fill="#c4b5fd"/>
+
+  <!-- === STEP 4: Unpack V === -->
+  <g transform="translate(230, 320)" filter="url(#fa-sh)">
+    <rect width="130" height="55" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+    <text x="65" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="600" fill="#16a34a">Unpack V tile</text>
+    <text x="65" y="38" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#22c55e">centroid gather</text>
+    <text x="65" y="50" text-anchor="middle" font-family="mono, monospace"
+          font-size="8" fill="#94a3b8">smem centroids_v[16]</text>
+  </g>
+
+  <!-- Arrow V in -> Unpack V -->
+  <line x1="170" y1="362" x2="230" y2="347" stroke="#86efac" stroke-width="1.5"/>
+  <polygon points="228,343 234,347 228,351" fill="#86efac"/>
+
+  <!-- === STEP 5: P @ V === -->
+  <g transform="translate(430, 300)" filter="url(#fa-sh)">
+    <rect width="130" height="70" rx="10" fill="white" stroke="#ddd6fe" stroke-width="1.5"/>
+    <rect width="130" height="5" rx="2.5" fill="url(#fa-attn)"/>
+    <text x="65" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#7c3aed">P @ V</text>
+    <text x="65" y="44" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#8b5cf6">* norm_v</text>
+    <text x="65" y="58" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#94a3b8">FP32 accumulator</text>
+  </g>
+
+  <!-- Arrow Softmax -> PV -->
+  <line x1="675" y1="190" x2="530" y2="300" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="620" y="250" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#8b5cf6">P (attn weights)</text>
+
+  <!-- Arrow Unpack V -> PV -->
+  <line x1="360" y1="347" x2="430" y2="335" stroke="#86efac" stroke-width="1.5"/>
+  <polygon points="428,331 434,335 428,339" fill="#86efac"/>
+
+  <!-- === STEP 6: Output === -->
+  <g transform="translate(630, 300)" filter="url(#fa-sh)">
+    <rect width="160" height="70" rx="10" fill="white" stroke="#fde68a" stroke-width="1.5"/>
+    <rect width="160" height="5" rx="2.5" fill="url(#fa-out)"/>
+    <text x="80" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="13" font-weight="700" fill="#b45309">Output</text>
+    <text x="80" y="46" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#f59e0b">[B, H_Q, 1, D]</text>
+    <text x="80" y="60" text-anchor="middle" font-family="mono, monospace"
+          font-size="9" fill="#94a3b8">FP16 / BF16</text>
+  </g>
+
+  <!-- Arrow PV -> Output -->
+  <line x1="560" y1="335" x2="630" y2="335" stroke="#fbbf24" stroke-width="1.5"/>
+  <polygon points="628,331 634,335 628,339" fill="#fbbf24"/>
+
+  <!-- === Tile loop annotation === -->
+  <g transform="translate(200, 430)">
+    <rect width="520" height="50" rx="10" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+    <text x="260" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#7c3aed">Tile Loop (FlashAttention-2 Online Algorithm)</text>
+    <text x="260" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" fill="#8b5cf6">
+      for each KV tile: unpack K -> Q@K^T -> softmax -> unpack V -> P@V -> accumulate
+    </text>
+  </g>
+
+  <!-- Looping arrow -->
+  <path d="M 790,335 Q 850,335 850,240 Q 850,155 790,155" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="792,151 786,155 792,159" fill="#c4b5fd"/>
+  <text x="862" y="250" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#8b5cf6"
+        transform="rotate(90, 862, 250)">next tile</text>
+</svg>

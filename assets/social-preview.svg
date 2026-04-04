@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none">
+  <defs>
+    <linearGradient id="sp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0a2e"/>
+      <stop offset="50%" style="stop-color:#1a1145"/>
+      <stop offset="100%" style="stop-color:#0c0720"/>
+    </linearGradient>
+    <linearGradient id="sp-bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#818cf8"/>
+      <stop offset="50%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </linearGradient>
+    <linearGradient id="sp-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="sp-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <filter id="sp-glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="sp-glow2">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Grid pattern for tech look -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#312e81" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#sp-bg)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="200" cy="500" r="200" fill="#6366f1" opacity="0.05" filter="url(#sp-glow2)"/>
+  <circle cx="1100" cy="150" r="250" fill="#a855f7" opacity="0.04" filter="url(#sp-glow2)"/>
+
+  <!-- Logo icon (large) -->
+  <g transform="translate(180, 260) scale(1.8)">
+    <polygon points="0,-72 62.4,-36 62.4,36 0,72 -62.4,36 -62.4,-36"
+             fill="none" stroke="url(#sp-ring)" stroke-width="3" opacity="0.2"/>
+    <polygon points="0,-55 47.6,-27.5 47.6,27.5 0,55 -47.6,27.5 -47.6,-27.5"
+             fill="none" stroke="url(#sp-ring)" stroke-width="2" opacity="0.4"/>
+    <path d="M -8,-42 L 8,-8 L -2,-8 L 8,42 L -8,8 L 2,8 Z"
+          fill="url(#sp-bolt)" filter="url(#sp-glow)"/>
+    <path d="M -44,0 A 44,44 0 0,1 0,-44" fill="none" stroke="#818cf8" stroke-width="1.5"
+          stroke-dasharray="4,3" opacity="0.3"/>
+    <path d="M 44,0 A 44,44 0 0,1 0,44" fill="none" stroke="#c084fc" stroke-width="1.5"
+          stroke-dasharray="4,3" opacity="0.3"/>
+  </g>
+
+  <!-- Title -->
+  <text x="430" y="220" font-family="Inter, system-ui, sans-serif"
+        font-size="80" font-weight="800" letter-spacing="-3">
+    <tspan fill="#e2e8f0">Flash</tspan><tspan fill="url(#sp-bolt)">Quant</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="430" y="270" font-family="Inter, system-ui, sans-serif"
+        font-size="26" font-weight="500" fill="#94a3b8" letter-spacing="0.5">
+    Extreme KV Cache Compression for LLM Inference
+  </text>
+
+  <!-- Accent line -->
+  <rect x="430" y="290" width="500" height="3" rx="1.5" fill="url(#sp-accent)" opacity="0.4"/>
+
+  <!-- Key metrics -->
+  <g transform="translate(430, 330)">
+    <!-- 7.5x -->
+    <g>
+      <text x="0" y="0" font-family="Inter, system-ui, sans-serif"
+            font-size="42" font-weight="800" fill="#a78bfa">7.5x</text>
+      <text x="0" y="22" font-family="Inter, system-ui, sans-serif"
+            font-size="14" fill="#64748b">compression</text>
+    </g>
+
+    <!-- < 2% -->
+    <g transform="translate(180, 0)">
+      <text x="0" y="0" font-family="Inter, system-ui, sans-serif"
+            font-size="42" font-weight="800" fill="#818cf8">&lt; 2%</text>
+      <text x="0" y="22" font-family="Inter, system-ui, sans-serif"
+            font-size="14" fill="#64748b">quality loss</text>
+    </g>
+
+    <!-- 12K lines -->
+    <g transform="translate(350, 0)">
+      <text x="0" y="0" font-family="Inter, system-ui, sans-serif"
+            font-size="42" font-weight="800" fill="#60a5fa">12K</text>
+      <text x="0" y="22" font-family="Inter, system-ui, sans-serif"
+            font-size="14" fill="#64748b">lines of code</text>
+    </g>
+
+    <!-- 264 tests -->
+    <g transform="translate(510, 0)">
+      <text x="0" y="0" font-family="Inter, system-ui, sans-serif"
+            font-size="42" font-weight="800" fill="#4ade80">264</text>
+      <text x="0" y="22" font-family="Inter, system-ui, sans-serif"
+            font-size="14" fill="#64748b">tests passing</text>
+    </g>
+  </g>
+
+  <!-- Tech badges -->
+  <g transform="translate(430, 400)" font-family="Inter, system-ui, sans-serif" font-size="14">
+    <rect x="0" y="0" width="70" height="28" rx="6" fill="#818cf8" opacity="0.15"/>
+    <text x="35" y="19" text-anchor="middle" fill="#a5b4fc" font-weight="600">C++17</text>
+
+    <rect x="80" y="0" width="68" height="28" rx="6" fill="#4ade80" opacity="0.15"/>
+    <text x="114" y="19" text-anchor="middle" fill="#86efac" font-weight="600">CUDA</text>
+
+    <rect x="158" y="0" width="82" height="28" rx="6" fill="#fb923c" opacity="0.15"/>
+    <text x="199" y="19" text-anchor="middle" fill="#fdba74" font-weight="600">PyTorch</text>
+
+    <rect x="250" y="0" width="60" height="28" rx="6" fill="#38bdf8" opacity="0.15"/>
+    <text x="280" y="19" text-anchor="middle" fill="#7dd3fc" font-weight="600">vLLM</text>
+
+    <rect x="320" y="0" width="114" height="28" rx="6" fill="#a78bfa" opacity="0.15"/>
+    <text x="377" y="19" text-anchor="middle" fill="#c4b5fd" font-weight="600">TurboQuant</text>
+  </g>
+
+  <!-- Paper reference -->
+  <text x="430" y="470" font-family="Inter, system-ui, sans-serif"
+        font-size="13" fill="#475569">
+    Based on TurboQuant (arXiv 2504.19874) by Google Research
+  </text>
+
+  <!-- Author -->
+  <g transform="translate(430, 520)">
+    <text x="0" y="0" font-family="Inter, system-ui, sans-serif"
+          font-size="14" font-weight="600" fill="#94a3b8">
+      By Ayi NEDJIMI
+    </text>
+    <text x="0" y="22" font-family="Inter, system-ui, sans-serif"
+          font-size="12" fill="#64748b">
+      ayinedjimi-consultants.fr
+    </text>
+  </g>
+
+  <!-- Subtle border -->
+  <rect x="1" y="1" width="1278" height="638" rx="4" fill="none" stroke="#312e81" stroke-width="2" opacity="0.3"/>
+</svg>

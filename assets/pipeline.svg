@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 340" fill="none">
+  <defs>
+    <linearGradient id="pg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/><stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="pg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/><stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <linearGradient id="pg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/><stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <linearGradient id="pg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899"/><stop offset="100%" style="stop-color:#f43f5e"/>
+    </linearGradient>
+    <linearGradient id="pg5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#14b8a6"/><stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="pg6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/><stop offset="100%" style="stop-color:#ef4444"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="550" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="20" font-weight="700" fill="#1e293b">
+    TurboQuant Compression Pipeline
+  </text>
+  <text x="550" y="50" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="12" fill="#64748b">
+    arXiv 2504.19874 — From FP16 KV vectors to 4-bit packed representation
+  </text>
+
+  <!-- === STAGE 1: Input === -->
+  <g transform="translate(30, 80)" filter="url(#shadow)">
+    <rect width="140" height="100" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect width="140" height="4" rx="2" fill="url(#pg2)"/>
+    <text x="70" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="13" font-weight="700" fill="#1e293b">Input KV</text>
+    <text x="70" y="50" text-anchor="middle" font-family="mono, monospace"
+          font-size="11" fill="#6366f1">[B, H, D]</text>
+    <text x="70" y="68" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">FP16 / BF16</text>
+    <text x="70" y="85" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">512 bytes/token</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <g transform="translate(175, 125)">
+    <line x1="0" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="2"/>
+    <polygon points="32,-5 42,0 32,5" fill="#cbd5e1"/>
+  </g>
+
+  <!-- === STAGE 2: Norm Extract === -->
+  <g transform="translate(220, 80)" filter="url(#shadow)">
+    <rect width="130" height="100" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect width="130" height="4" rx="2" fill="url(#pg1)"/>
+    <text x="65" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#1e293b">1. Normalize</text>
+    <text x="65" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#6366f1">n = ||x||</text>
+    <text x="65" y="63" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#6366f1">x' = x / n</text>
+    <text x="65" y="85" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">Extract + store</text>
+    <text x="65" y="96" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">FP32 norms</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <g transform="translate(355, 125)">
+    <line x1="0" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="2"/>
+    <polygon points="32,-5 42,0 32,5" fill="#cbd5e1"/>
+  </g>
+
+  <!-- === STAGE 3: Rotate === -->
+  <g transform="translate(400, 80)" filter="url(#shadow)">
+    <rect width="130" height="100" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect width="130" height="4" rx="2" fill="url(#pg3)"/>
+    <text x="65" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#1e293b">2. Rotate</text>
+    <text x="65" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#8b5cf6">x'' = R^T x'</text>
+    <text x="65" y="68" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">Haar orthogonal</text>
+    <text x="65" y="82" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">Coords become</text>
+    <text x="65" y="94" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">i.i.d. Gaussian</text>
+  </g>
+
+  <!-- Arrow 3 -->
+  <g transform="translate(535, 125)">
+    <line x1="0" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="2"/>
+    <polygon points="32,-5 42,0 32,5" fill="#cbd5e1"/>
+  </g>
+
+  <!-- === STAGE 4: Quantize === -->
+  <g transform="translate(570, 80)" filter="url(#shadow)">
+    <rect width="140" height="100" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect width="140" height="4" rx="2" fill="url(#pg4)"/>
+    <text x="70" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#1e293b">3. Quantize</text>
+    <text x="70" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#ec4899">Lloyd-Max</text>
+    <text x="70" y="63" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#ec4899">idx = bucket(x'')</text>
+    <text x="70" y="83" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">16 levels (4-bit)</text>
+    <text x="70" y="95" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">Closed-form</text>
+  </g>
+
+  <!-- Arrow 4 -->
+  <g transform="translate(715, 125)">
+    <line x1="0" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="2"/>
+    <polygon points="32,-5 42,0 32,5" fill="#cbd5e1"/>
+  </g>
+
+  <!-- === STAGE 5: Pack === -->
+  <g transform="translate(750, 80)" filter="url(#shadow)">
+    <rect width="130" height="100" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect width="130" height="4" rx="2" fill="url(#pg5)"/>
+    <text x="65" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#1e293b">4. Nibble Pack</text>
+    <text x="65" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#14b8a6">(a &lt;&lt; 4) | b</text>
+    <text x="65" y="68" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">2 indices/byte</text>
+    <text x="65" y="82" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">D/2 bytes</text>
+    <text x="65" y="94" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#94a3b8">+ 4B norm</text>
+  </g>
+
+  <!-- Arrow 5 -->
+  <g transform="translate(885, 125)">
+    <line x1="0" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="2"/>
+    <polygon points="32,-5 42,0 32,5" fill="#cbd5e1"/>
+  </g>
+
+  <!-- === STAGE 6: Output === -->
+  <g transform="translate(920, 80)" filter="url(#shadow)">
+    <rect width="150" height="100" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect width="150" height="4" rx="2" fill="url(#pg6)"/>
+    <text x="75" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="700" fill="#1e293b">Compressed</text>
+    <text x="75" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="11" fill="#f59e0b">[B, H, D/2]</text>
+    <text x="75" y="63" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#ef4444">uint8 + fp32</text>
+    <text x="75" y="85" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#16a34a">68 bytes/token</text>
+    <text x="75" y="96" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#16a34a">7.5x smaller</text>
+  </g>
+
+  <!-- === STAGE 2b: QJL (lower row for TurboQuant_prod) === -->
+  <g transform="translate(400, 220)" filter="url(#shadow)">
+    <rect width="420" height="90" rx="12" fill="white" stroke="#e9d5ff" stroke-width="1.5"/>
+    <rect width="420" height="4" rx="2" fill="url(#pg3)"/>
+    <text x="210" y="26" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="13" font-weight="700" fill="#7c3aed">Stage 2: QJL Correction (Keys Only)</text>
+    <text x="210" y="48" text-anchor="middle" font-family="mono, monospace"
+          font-size="11" fill="#8b5cf6">
+      r = x - x_hat  |  signs = sign(S @ r)  |  gamma = ||r||
+    </text>
+    <text x="210" y="68" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" fill="#64748b">
+      Unbiased inner product estimator: only +1 bit/dim extra storage
+    </text>
+    <text x="210" y="84" text-anchor="middle" font-family="mono, monospace"
+          font-size="10" fill="#a855f7">
+      &lt;q,k&gt; ~ &lt;q,k_mse&gt; + gamma * sqrt(pi/2)/d * &lt;Sq, signs&gt;
+    </text>
+  </g>
+
+  <!-- Vertical connector from Stage 3 to QJL -->
+  <g>
+    <line x1="465" y1="180" x2="465" y2="220" stroke="#d8b4fe" stroke-width="2" stroke-dasharray="5,3"/>
+    <polygon points="460,218 465,228 470,218" fill="#d8b4fe"/>
+  </g>
+
+  <!-- Compression ratio annotation -->
+  <g transform="translate(30, 300)">
+    <rect width="1040" height="30" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+    <text x="520" y="20" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="600" fill="#15803d">
+      MSE Distortion Bound: MSE(x, x-hat) &lt;= (sqrt(3) * pi/2) / 4^b * ||x||^2  —  Only 2.72x from theoretical optimum
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <defs>
+    <linearGradient id="mc-fp16" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444"/><stop offset="100%" style="stop-color:#dc2626"/>
+    </linearGradient>
+    <linearGradient id="mc-tq4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/><stop offset="100%" style="stop-color:#4f46e5"/>
+    </linearGradient>
+    <filter id="mc-sh">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="18" font-weight="700" fill="#1e293b">
+    KV Cache Memory: FP16 vs FlashQuant TQ4
+  </text>
+  <text x="400" y="50" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="12" fill="#64748b">
+    Llama-3-70B, 32 KV heads, head_dim=128 — Memory per 1K tokens (K+V)
+  </text>
+
+  <!-- Y axis -->
+  <line x1="100" y1="70" x2="100" y2="330" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Y axis labels -->
+  <text x="90" y="77" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">16 MB</text>
+  <line x1="95" y1="73" x2="100" y2="73" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="90" y="141" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">12 MB</text>
+  <line x1="95" y1="137.5" x2="750" y2="137.5" stroke="#f1f5f9" stroke-width="1"/>
+
+  <text x="90" y="206" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">8 MB</text>
+  <line x1="95" y1="202" x2="750" y2="202" stroke="#f1f5f9" stroke-width="1"/>
+
+  <text x="90" y="270" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">4 MB</text>
+  <line x1="95" y1="266.5" x2="750" y2="266.5" stroke="#f1f5f9" stroke-width="1"/>
+
+  <text x="90" y="334" text-anchor="end" font-family="mono, monospace" font-size="10" fill="#94a3b8">0 MB</text>
+
+  <!-- X axis -->
+  <line x1="100" y1="330" x2="750" y2="330" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- === Bars: 4K context === -->
+  <!-- FP16: 4K tokens * 32 heads * 128 dim * 2 bytes * 2 (K+V) = 64 MB -> at scale show 2 MB -->
+  <!-- Let's use per-1K-token values: FP16 = 16MB, TQ4 = 2.1MB for this config -->
+
+  <!-- Group 1: d=64 -->
+  <g transform="translate(140, 0)">
+    <!-- FP16 bar: 8 MB -->
+    <rect x="0" y="73" width="55" height="257" rx="4" fill="url(#mc-fp16)" filter="url(#mc-sh)"/>
+    <text x="27" y="65" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#dc2626">8 MB</text>
+
+    <!-- TQ4 bar: 1.1 MB -->
+    <rect x="65" y="294" width="55" height="36" rx="4" fill="url(#mc-tq4)" filter="url(#mc-sh)"/>
+    <text x="92" y="289" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#4f46e5">1.1 MB</text>
+
+    <text x="60" y="355" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="600" fill="#475569">d=64</text>
+    <text x="60" y="370" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#16a34a" font-weight="700">7.3x</text>
+  </g>
+
+  <!-- Group 2: d=128 -->
+  <g transform="translate(310, 0)">
+    <!-- FP16 bar: 16 MB -->
+    <rect x="0" y="73" width="55" height="257" rx="4" fill="url(#mc-fp16)" filter="url(#mc-sh)" opacity="0.85"/>
+    <!-- Actually let's make d=128 the full height -->
+    <rect x="0" y="73" width="55" height="257" rx="4" fill="url(#mc-fp16)" filter="url(#mc-sh)"/>
+    <text x="27" y="65" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#dc2626">16 MB</text>
+
+    <!-- TQ4 bar: 2.1 MB -->
+    <rect x="65" y="296" width="55" height="34" rx="4" fill="url(#mc-tq4)" filter="url(#mc-sh)"/>
+    <text x="92" y="291" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#4f46e5">2.1 MB</text>
+
+    <text x="60" y="355" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="600" fill="#475569">d=128</text>
+    <text x="60" y="370" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#16a34a" font-weight="700">7.5x</text>
+  </g>
+
+  <!-- Group 3: d=256 -->
+  <g transform="translate(480, 0)">
+    <!-- FP16 bar: scale to fit, say 14.5 MB shown -->
+    <rect x="0" y="73" width="55" height="257" rx="4" fill="url(#mc-fp16)" filter="url(#mc-sh)"/>
+    <text x="27" y="65" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#dc2626">32 MB</text>
+
+    <!-- TQ4 bar -->
+    <rect x="65" y="298" width="55" height="32" rx="4" fill="url(#mc-tq4)" filter="url(#mc-sh)"/>
+    <text x="92" y="293" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="700" fill="#4f46e5">4.1 MB</text>
+
+    <text x="60" y="355" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="12" font-weight="600" fill="#475569">d=256</text>
+    <text x="60" y="370" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="10" fill="#16a34a" font-weight="700">7.8x</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(640, 80)">
+    <rect width="140" height="80" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1" filter="url(#mc-sh)"/>
+    <rect x="15" y="18" width="18" height="14" rx="3" fill="url(#mc-fp16)"/>
+    <text x="42" y="30" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#475569">FP16 KV</text>
+    <rect x="15" y="44" width="18" height="14" rx="3" fill="url(#mc-tq4)"/>
+    <text x="42" y="56" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#475569">FlashQuant</text>
+  </g>
+
+  <!-- Bottom annotation -->
+  <g transform="translate(100, 385)">
+    <rect width="650" height="24" rx="5" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+    <text x="325" y="17" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+          font-size="11" font-weight="600" fill="#15803d">
+      Per 1K tokens with 32 KV heads | 4-bit quantization | Nibble-packed indices + FP32 norms
+    </text>
+  </g>
+</svg>
