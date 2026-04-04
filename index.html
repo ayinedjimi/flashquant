@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlashQuant — Extreme KV Cache Compression for LLM Inference</title>
+  <meta name="description" content="C++17/CUDA implementation of TurboQuant for 7.5x KV cache compression with less than 2% quality loss.">
+  <style>
+    :root {
+      --bg-dark: #0f0a2e;
+      --bg-mid: #1a1145;
+      --accent: #818cf8;
+      --accent2: #a78bfa;
+      --accent3: #c084fc;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --card-bg: rgba(30, 20, 70, 0.6);
+      --card-border: rgba(129, 140, 248, 0.15);
+      --code-bg: #1e1340;
+      --green: #4ade80;
+      --red: #f87171;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 50%, #0c0720 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* Navigation */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(15, 10, 46, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 100;
+      padding: 14px 0;
+    }
+    nav .container {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav .logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; }
+    nav .logo span { color: var(--accent2); }
+    nav ul { list-style: none; display: flex; gap: 28px; }
+    nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    nav a:hover { color: var(--accent); }
+
+    /* Hero */
+    .hero {
+      padding: 160px 0 100px;
+      text-align: center;
+    }
+    .hero img { max-width: 380px; width: 80%; margin-bottom: 32px; }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: var(--accent2); }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 640px;
+      margin: 0 auto 48px;
+    }
+
+    /* Metrics */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 20px;
+      max-width: 700px;
+      margin: 0 auto 48px;
+    }
+    .metric {
+      text-align: center;
+      padding: 24px 12px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+    }
+    .metric .value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .metric .label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* CTA buttons */
+    .cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .btn-secondary:hover { background: rgba(99, 102, 241, 0.1); }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    section h2 span { color: var(--accent2); }
+    .section-sub {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+
+    /* Feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .feature {
+      padding: 28px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      transition: border-color 0.3s;
+    }
+    .feature:hover { border-color: rgba(129, 140, 248, 0.35); }
+    .feature h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .feature .icon { font-size: 1.6rem; margin-bottom: 12px; display: block; }
+    .feature p { color: var(--text-dim); font-size: 0.92rem; }
+
+    /* Architecture */
+    .arch-img {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: block;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      max-width: 720px;
+    }
+    .code-block .kw { color: #c084fc; }
+    .code-block .fn { color: #60a5fa; }
+    .code-block .str { color: #4ade80; }
+    .code-block .num { color: #fbbf24; }
+    .code-block .cm { color: #64748b; }
+    .code-block .op { color: #f472b6; }
+
+    /* Comparison table */
+    .comparison {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 32px 0;
+      font-size: 0.92rem;
+    }
+    .comparison th, .comparison td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid rgba(129, 140, 248, 0.1);
+    }
+    .comparison th {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .comparison td { color: var(--text-dim); }
+    .comparison .highlight { color: var(--green); font-weight: 600; }
+    .comparison .dim { color: var(--text-muted); }
+
+    /* Docs links */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .doc-link {
+      display: block;
+      padding: 20px 24px;
+      border-radius: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .doc-link:hover {
+      border-color: rgba(129, 140, 248, 0.4);
+      transform: translateY(-2px);
+    }
+    .doc-link .title { font-weight: 600; margin-bottom: 4px; }
+    .doc-link .desc { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Citation */
+    .citation {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-dim);
+      overflow-x: auto;
+      max-width: 700px;
+    }
+
+    /* Footer */
+    footer {
+      padding: 48px 0;
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--text-dim); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+    .footer-author {
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+    }
+    .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+
+    /* Badges */
+    .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+    .badge {
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge-cpp { background: rgba(129, 140, 248, 0.15); color: #a5b4fc; }
+    .badge-cuda { background: rgba(74, 222, 128, 0.15); color: #86efac; }
+    .badge-pytorch { background: rgba(251, 146, 60, 0.15); color: #fdba74; }
+    .badge-vllm { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; }
+
+    /* Separator */
+    .sep {
+      width: 80px; height: 3px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      margin: 16px 0 0;
+      opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav ul { gap: 16px; }
+      nav a { font-size: 13px; }
+      .hero { padding: 130px 0 60px; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      section { padding: 60px 0; }
+      .features { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      nav ul { display: none; }
+      .metrics { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .metric .value { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="container">
+    <a href="#" class="logo">Flash<span>Quant</span></a>
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#docs">Docs</a></li>
+      <li><a href="https://github.com/ayinedjimi/flashquant" rel="noopener">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="container">
+    <img src="https://raw.githubusercontent.com/ayinedjimi/flashquant/main/assets/logo-dark.svg" alt="FlashQuant">
+
+    <h1>Extreme KV Cache <span>Compression</span></h1>
+    <p>C++17/CUDA implementation of TurboQuant for LLM inference. Compress the Key-Value cache by 7.5x with less than 2% quality loss.</p>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="value">7.5x</div>
+        <div class="label">Compression</div>
+      </div>
+      <div class="metric">
+        <div class="value">&lt; 2%</div>
+        <div class="label">Quality Loss</div>
+      </div>
+      <div class="metric">
+        <div class="value">12K</div>
+        <div class="label">Lines of Code</div>
+      </div>
+      <div class="metric">
+        <div class="value">264</div>
+        <div class="label">Tests Passing</div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a href="https://github.com/ayinedjimi/flashquant" class="btn btn-primary" rel="noopener">
+        View on GitHub
+      </a>
+      <a href="https://arxiv.org/abs/2504.19874" class="btn btn-secondary" rel="noopener">
+        Read the Paper
+      </a>
+    </div>
+
+    <div class="badges">
+      <span class="badge badge-cpp">C++17</span>
+      <span class="badge badge-cuda">CUDA</span>
+      <span class="badge badge-pytorch">PyTorch</span>
+      <span class="badge badge-vllm">vLLM</span>
+    </div>
+  </div>
+</header>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <h2>Why <span>FlashQuant</span></h2>
+    <p class="section-sub">Production-grade KV cache compression built for real-world LLM serving.</p>
+    <div class="sep"></div>
+
+    <div class="features" style="margin-top: 40px;">
+      <div class="feature">
+        <span class="icon">&#9889;</span>
+        <h3>Fused CUDA Kernels</h3>
+        <p>6 native CUDA kernels fuse compression, decompression, and attention into single passes. Zero intermediate memory allocations.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">&#128200;</span>
+        <h3>Split-K FlashDecoding</h3>
+        <p>Parallelize decode attention across KV positions with NUM_SPLITS=4 for maximum SM utilization during autoregressive generation.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">&#128202;</span>
+        <h3>O(1) Cache Append</h3>
+        <p>Pre-allocated ring buffers replace O(N&sup2;) torch.cat. Cache grows in constant time regardless of sequence length.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">&#128268;</span>
+        <h3>vLLM Backend Plugin</h3>
+        <p>Drop-in attention backend for vLLM v0.18-0.22. No monkeypatching, clean registration with version guards.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">&#128290;</span>
+        <h3>Data-Free Quantization</h3>
+        <p>Random rotation makes coordinates Gaussian, enabling closed-form Lloyd-Max codebooks. No calibration data needed.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">&#128295;</span>
+        <h3>CPU Testable</h3>
+        <p>Pure PyTorch reference implementations for every kernel. Full test suite runs on CPU with no GPU required.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section id="comparison" style="padding-top: 0;">
+  <div class="container">
+    <h2>Memory <span>Savings</span></h2>
+    <p class="section-sub">KV cache memory per 1K tokens with 32 KV heads.</p>
+    <div class="sep"></div>
+
+    <table class="comparison" style="margin-top: 40px;">
+      <thead>
+        <tr>
+          <th>Head Dim</th>
+          <th>FP16 KV Cache</th>
+          <th>FlashQuant TQ4</th>
+          <th>Savings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>d=64</td>
+          <td class="dim">8 MB</td>
+          <td>1.1 MB</td>
+          <td class="highlight">7.3x</td>
+        </tr>
+        <tr>
+          <td>d=128</td>
+          <td class="dim">16 MB</td>
+          <td>2.1 MB</td>
+          <td class="highlight">7.5x</td>
+        </tr>
+        <tr>
+          <td>d=256</td>
+          <td class="dim">32 MB</td>
+          <td>4.1 MB</td>
+          <td class="highlight">7.8x</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section id="architecture">
+  <div class="container">
+    <h2>System <span>Architecture</span></h2>
+    <p class="section-sub">Layered design from Python API down to native CUDA kernels.</p>
+    <div class="sep"></div>
+
+    <img src="https://raw.githubusercontent.com/ayinedjimi/flashquant/main/assets/architecture.svg"
+         alt="FlashQuant System Architecture" class="arch-img" style="margin-top: 40px;" loading="lazy">
+
+    <div style="margin-top: 40px;">
+      <img src="https://raw.githubusercontent.com/ayinedjimi/flashquant/main/assets/fused-attention-flow.svg"
+           alt="Fused TQ4 Attention Data Flow" class="arch-img" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- Quick Start -->
+<section id="quickstart">
+  <div class="container">
+    <h2>Quick <span>Start</span></h2>
+    <p class="section-sub">Get up and running in under a minute.</p>
+    <div class="sep"></div>
+
+    <div class="code-block" style="margin-top: 40px;">
+      <span class="cm"># Install (CPU-only, no compilation needed)</span><br>
+      git clone https://github.com/ayinedjimi/flashquant.git<br>
+      cd flashquant && pip install -e .<br>
+      <br>
+      <span class="cm"># With CUDA kernels</span><br>
+      pip install -e <span class="str">".[dev]"</span><br>
+      cmake -B build -DFLASHQUANT_CUDA=ON<br>
+      cmake --build build -j$(nproc)
+    </div>
+
+    <div class="code-block" style="margin-top: 24px;">
+      <span class="kw">import</span> torch<br>
+      <span class="kw">from</span> flashquant <span class="kw">import</span> TurboQuantMSE<br>
+      <br>
+      quantizer = <span class="fn">TurboQuantMSE</span>(dim=<span class="num">128</span>, bits=<span class="num">4</span>, seed=<span class="num">42</span>)<br>
+      x = torch.<span class="fn">randn</span>(<span class="num">32</span>, <span class="num">16</span>, <span class="num">128</span>)  <span class="cm"># [batch, heads, dim]</span><br>
+      <br>
+      indices, norms = quantizer.<span class="fn">quantize</span>(x)<br>
+      x_hat = quantizer.<span class="fn">dequantize</span>(indices, norms)<br>
+      <br>
+      cos_sim = torch.nn.functional.<span class="fn">cosine_similarity</span>(<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;x.<span class="fn">flatten</span>(<span class="num">0</span>, <span class="num">-2</span>), x_hat.<span class="fn">flatten</span>(<span class="num">0</span>, <span class="num">-2</span>), dim=<span class="num">-1</span><br>
+      ).<span class="fn">mean</span>()<br>
+      <span class="fn">print</span>(<span class="str">f"Cosine similarity: {cos_sim:.4f}"</span>)  <span class="cm"># &gt;= 0.95</span>
+    </div>
+  </div>
+</section>
+
+<!-- Documentation -->
+<section id="docs">
+  <div class="container">
+    <h2><span>Documentation</span></h2>
+    <p class="section-sub">Comprehensive guides covering every aspect of FlashQuant.</p>
+    <div class="sep"></div>
+
+    <div class="doc-grid" style="margin-top: 40px;">
+      <a href="https://github.com/ayinedjimi/flashquant/blob/main/docs/Algorithm-Deep-Dive.md" class="doc-link" rel="noopener">
+        <div class="title">Algorithm Deep Dive</div>
+        <div class="desc">Mathematical foundations, proofs, and distortion bounds</div>
+      </a>
+      <a href="https://github.com/ayinedjimi/flashquant/blob/main/docs/Architecture.md" class="doc-link" rel="noopener">
+        <div class="title">Architecture</div>
+        <div class="desc">System design &mdash; C++ core, CUDA kernels, Python dispatch</div>
+      </a>
+      <a href="https://github.com/ayinedjimi/flashquant/blob/main/docs/CUDA-Kernels.md" class="doc-link" rel="noopener">
+        <div class="title">CUDA Kernels</div>
+        <div class="desc">Detailed walkthrough of all 6 native CUDA kernels</div>
+      </a>
+      <a href="https://github.com/ayinedjimi/flashquant/blob/main/docs/Integration-Guide.md" class="doc-link" rel="noopener">
+        <div class="title">Integration Guide</div>
+        <div class="desc">Standalone, HuggingFace, and vLLM usage</div>
+      </a>
+      <a href="https://github.com/ayinedjimi/flashquant/blob/main/docs/Testing.md" class="doc-link" rel="noopener">
+        <div class="title">Testing</div>
+        <div class="desc">264-test suite documentation and methodology</div>
+      </a>
+      <a href="https://github.com/ayinedjimi/flashquant/wiki" class="doc-link" rel="noopener">
+        <div class="title">Wiki</div>
+        <div class="desc">Full project wiki with in-depth articles</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Citation -->
+<section id="citation">
+  <div class="container">
+    <h2><span>Citation</span></h2>
+    <p class="section-sub">If you use FlashQuant in your research, please cite the original TurboQuant paper.</p>
+    <div class="sep"></div>
+
+    <div class="citation" style="margin-top: 40px;">
+@article{ashkboos2025turboquant,<br>
+&nbsp;&nbsp;title={TurboQuant: Online Vector Quantization for Efficient KV Cache Compression},<br>
+&nbsp;&nbsp;author={Ashkboos, Saleh and Mohtashami, Amirkeivan and Croci, Matteo and Li, Bo<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and Jaggi, Martin and Alistarh, Dan and Hoefler, Torsten and Hensman, James},<br>
+&nbsp;&nbsp;journal={arXiv preprint arXiv:2504.19874},<br>
+&nbsp;&nbsp;year={2025}<br>
+}
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="https://github.com/ayinedjimi/flashquant" rel="noopener">GitHub</a>
+      <a href="https://github.com/ayinedjimi/flashquant/discussions" rel="noopener">Discussions</a>
+      <a href="https://github.com/ayinedjimi/flashquant/wiki" rel="noopener">Wiki</a>
+      <a href="https://arxiv.org/abs/2504.19874" rel="noopener">Paper</a>
+    </div>
+    <p class="footer-author">
+      Built by <strong>Ayi NEDJIMI</strong> &mdash;
+      <a href="https://ayinedjimi-consultants.fr" rel="noopener">ayinedjimi-consultants.fr</a>
+    </p>
+    <p>Apache License 2.0 &copy; 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
